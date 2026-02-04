@@ -7,7 +7,7 @@ name = "landgempy"
 version = "0.1.0"
 description = "Python Package for EPA's LandGEM model"
 readme = "README.md"
-authors = [{name = "Ryan Kmetz", email = "kmetzrm@gmail.com"}]
+authors = [{name = "Ryan Kmetz", email = "consultrmk@gmail.com"}]
 license = {text = "MIT"}
 classifiers = [
     "Development Status :: 3 - Alpha",
