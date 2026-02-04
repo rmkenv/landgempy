@@ -1,1 +1,23 @@
-undefined
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "landgempy"
+version = "0.1.0"
+description = "A Python implementation of the LandGEM emission model"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "MIT"}
+authors = [
+    {name = "RMK Env"},
+]
+dependencies = [
+    "pandas",
+    "numpy",
+    "matplotlib",
+    "scipy"
+]
+
+[project.urls]
+Homepage = "https://github.com/rmkenv/landgempy"
