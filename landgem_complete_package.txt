@@ -1,0 +1,2400 @@
+# LandGEM Python Package - Complete Source Code
+
+This file contains all source code for the LandGEM package.
+Generated: 2026-02-04 12:22:24.405114
+Total files: 25
+
+================================================================================
+
+
+================================================================================
+FILE: .gitignore
+================================================================================
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pyenv
+.python-version
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project specific
+*.csv
+*.xlsx
+*.png
+!docs/images/*.png
+
+
+
+================================================================================
+FILE: CHANGELOG.md
+================================================================================
+
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+## [1.0.0] - 2026-02-04
+
+### Added
+- Initial release
+- First-order decay model implementation
+- EPA CAA and Inventory default parameters
+- Multi-stream waste modeling
+- Time series projections
+- NMOC calculations
+- Visualization tools
+- Comprehensive test suite
+- Example scripts
+- Full documentation
+
+### Features
+- Single and multi-stream modeling
+- Gas collection efficiency modeling
+- Waste in place calculations
+- CSV/Excel import/export
+- Parameter validation
+- Matplotlib visualizations
+
+## References
+- EPA LandGEM v3.03 methodology
+- 40 CFR Part 60 Subpart WWW
+- 40 CFR Part 60 Subpart Cc
+
+
+
+================================================================================
+FILE: LICENSE
+================================================================================
+
+MIT License
+
+Copyright (c) 2026 Your Name
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+
+
+================================================================================
+FILE: MANIFEST.in
+================================================================================
+
+include README.md
+include LICENSE
+include requirements.txt
+recursive-include landgem *.py
+recursive-include tests *.py
+recursive-include examples *.py
+
+
+
+================================================================================
+FILE: README.md
+================================================================================
+
+# LandGEM - Landfill Gas Emissions Model
+
+Python implementation of EPA's Landfill Gas Emissions Model (LandGEM) using first-order decay equations.
+
+## Features
+
+- ✅ First-order decay model implementation
+- ✅ EPA default parameters (CAA & Inventory)
+- ✅ Site-specific parameter support
+- ✅ Multiple gas calculations (CH₄, CO₂, NMOC)
+- ✅ Time series projections
+- ✅ Multi-stream waste modeling
+- ✅ Visualization tools
+- ✅ Export to CSV/Excel
+
+## Installation
+
+```bash
+pip install landgem
+```
+
+Or install from source:
+
+```bash
+git clone https://github.com/yourusername/landgem.git
+cd landgem
+pip install -e .
+```
+
+## Quick Start
+
+```python
+import numpy as np
+from landgem import LandGEM
+
+# Create model with default CAA parameters
+model = LandGEM(k=0.05, L0=170, methane_content=0.50)
+
+# Define waste data
+waste_years = np.arange(2010, 2025)
+waste_amounts = np.array([5000, 5200, 5500, 5800, 6000, 6200,
+                          6500, 6800, 7000, 7200, 7500, 7800,
+                          8000, 8200, 8500])
+
+# Calculate emissions
+results = model.calculate_emissions(
+    waste_years=waste_years,
+    waste_amounts=waste_amounts,
+    calculation_year=2030
+)
+
+print(f"Methane: {results['ch4_m3_year']:.2f} m³/year")
+```
+
+## Documentation
+
+Full documentation available at: https://landgem.readthedocs.io
+
+## License
+
+MIT License - see LICENSE file for details.
+
+## References
+
+- EPA LandGEM: https://www.epa.gov/land-research/landfill-gas-emissions-model-landgem
+- User Guide: EPA/600/B-24/160
+
+
+
+================================================================================
+FILE: examples/basic_usage.py
+================================================================================
+
+"""
+Basic LandGEM usage example.
+"""
+import numpy as np
+from landgem import LandGEM, DefaultParameters
+
+def main():
+    print("="*60)
+    print("LandGEM Basic Usage Example")
+    print("="*60)
+
+    # Method 1: Use default parameters
+    print("\n1. Using EPA CAA Default Parameters:")
+    params = DefaultParameters.caa_conventional()
+    model = LandGEM(**params)
+    print(f"   Model: {model}")
+
+    # Define waste acceptance data
+    waste_years = np.arange(2010, 2025)
+    waste_amounts = np.array([
+        5000, 5200, 5500, 5800, 6000, 6200,
+        6500, 6800, 7000, 7200, 7500, 7800,
+        8000, 8200, 8500
+    ])
+
+    print(f"\n   Waste data: {len(waste_years)} years")
+    print(f"   Total waste: {waste_amounts.sum():,.0f} Mg")
+
+    # Calculate emissions for 2030
+    results = model.calculate_emissions(
+        waste_years=waste_years,
+        waste_amounts=waste_amounts,
+        calculation_year=2030
+    )
+
+    print(f"\n2. Emissions for year 2030:")
+    print(f"   Methane (CH₄):    {results['ch4_m3_year']:>15,.0f} m³/year")
+    print(f"   Total LFG:        {results['total_lfg_m3_year']:>15,.0f} m³/year")
+    print(f"   CO₂:              {results['co2_m3_year']:>15,.0f} m³/year")
+
+    # Calculate time series
+    print(f"\n3. Generating 25-year projection...")
+    projection_years = np.arange(2025, 2051)
+    emissions_df = model.calculate_time_series(
+        waste_years=waste_years,
+        waste_amounts=waste_amounts,
+        projection_years=projection_years
+    )
+
+    print(f"   Generated {len(emissions_df)} years of data")
+    print(f"\n   Peak methane year: {emissions_df.loc[emissions_df['ch4_m3_year'].idxmax(), 'year']:.0f}")
+    print(f"   Peak methane: {emissions_df['ch4_m3_year'].max():,.0f} m³/year")
+
+    # Export results
+    emissions_df.to_csv('landgem_basic_output.csv', index=False)
+    print(f"\n   Results saved to: landgem_basic_output.csv")
+
+    # Method 2: Custom parameters
+    print(f"\n4. Using Custom Parameters:")
+    custom_model = LandGEM(
+        k=0.045,  # Slightly lower than CAA default
+        L0=150,   # Lower potential capacity
+        methane_content=0.52  # Slightly higher methane content
+    )
+
+    custom_results = custom_model.calculate_emissions(
+        waste_years=waste_years,
+        waste_amounts=waste_amounts,
+        calculation_year=2030
+    )
+
+    print(f"   Methane (CH₄):    {custom_results['ch4_m3_year']:>15,.0f} m³/year")
+
+    # Compare results
+    diff = ((custom_results['ch4_m3_year'] - results['ch4_m3_year']) / 
+            results['ch4_m3_year'] * 100)
+    print(f"   Difference from CAA: {diff:+.1f}%")
+
+    print(f"\n{'='*60}")
+    print("Example completed successfully!")
+    print(f"{'='*60}")
+
+if __name__ == "__main__":
+    main()
+
+
+
+================================================================================
+FILE: examples/bioreactor_example.py
+================================================================================
+
+"""
+Bioreactor landfill modeling example.
+"""
+import numpy as np
+from landgem import LandGEM, DefaultParameters
+
+def main():
+    print("="*60)
+    print("Bioreactor Landfill Example")
+    print("="*60)
+
+    # Compare conventional vs bioreactor
+    conv_params = DefaultParameters.caa_conventional()
+    bio_params = DefaultParameters.caa_wet()
+
+    print(f"\nConventional k: {conv_params['k']}")
+    print(f"Bioreactor k:   {bio_params['k']}")
+    print(f"\nBioreactor accelerates decomposition by {bio_params['k']/conv_params['k']:.0f}x")
+
+    # Create both models
+    conv_model = LandGEM(**conv_params)
+    bio_model = LandGEM(**bio_params)
+
+    # Waste data
+    waste_years = np.arange(2015, 2025)
+    waste_amounts = np.full(10, 8000)  # 8000 Mg/year
+
+    # Calculate projections
+    projection_years = np.arange(2025, 2046)
+
+    conv_emissions = conv_model.calculate_time_series(
+        waste_years=waste_years,
+        waste_amounts=waste_amounts,
+        projection_years=projection_years
+    )
+
+    bio_emissions = bio_model.calculate_time_series(
+        waste_years=waste_years,
+        waste_amounts=waste_amounts,
+        projection_years=projection_years
+    )
+
+    # Compare results
+    print(f"\nPeak Methane Generation:")
+    print(f"  Conventional: {conv_emissions['ch4_m3_year'].max():>12,.0f} m³/year")
+    print(f"  Bioreactor:   {bio_emissions['ch4_m3_year'].max():>12,.0f} m³/year")
+
+    peak_year_conv = conv_emissions.loc[conv_emissions['ch4_m3_year'].idxmax(), 'year']
+    peak_year_bio = bio_emissions.loc[bio_emissions['ch4_m3_year'].idxmax(), 'year']
+
+    print(f"\nPeak Year:")
+    print(f"  Conventional: {peak_year_conv:.0f}")
+    print(f"  Bioreactor:   {peak_year_bio:.0f}")
+    print(f"  Difference:   {peak_year_conv - peak_year_bio:.0f} years earlier")
+
+    # Gas collection scenario
+    print(f"\n{'='*60}")
+    print("Gas Collection Analysis (85% efficiency)")
+    print(f"{'='*60}")
+
+    bio_collected = bio_model.calculate_time_series(
+        waste_years=waste_years,
+        waste_amounts=waste_amounts,
+        projection_years=projection_years,
+        collection_efficiency=0.85
+    )
+
+    total_generated = bio_collected['ch4_m3_year'].sum()
+    total_collected = bio_collected['ch4_collected_m3_year'].sum()
+
+    print(f"\nTotal Methane (2025-2045):")
+    print(f"  Generated: {total_generated:>15,.0f} m³")
+    print(f"  Collected: {total_collected:>15,.0f} m³")
+    print(f"  Efficiency: {total_collected/total_generated*100:>14.1f}%")
+
+    # Energy potential (assumes 1000 BTU/cf methane)
+    # 1 m³ = 35.3147 cf
+    energy_btu = total_collected * 35.3147 * 1000
+    energy_mwh = energy_btu / 3412141  # BTU to MWh
+
+    print(f"\nEnergy Recovery Potential:")
+    print(f"  {energy_btu/1e9:>6.2f} billion BTU")
+    print(f"  {energy_mwh:>6,.0f} MWh")
+
+    # Save results
+    bio_collected.to_csv('bioreactor_emissions.csv', index=False)
+    print(f"\nResults saved to: bioreactor_emissions.csv")
+
+if __name__ == "__main__":
+    main()
+
+
+
+================================================================================
+FILE: examples/multi_stream_example.py
+================================================================================
+
+"""
+Multi-stream waste modeling example.
+"""
+import numpy as np
+from landgem import MultiStreamLandGEM
+
+def main():
+    print("="*60)
+    print("Multi-Stream Waste Modeling Example")
+    print("="*60)
+
+    # Create multi-stream model
+    model = MultiStreamLandGEM(k=0.05, methane_content=0.50)
+
+    # Define different waste streams with different L0 values
+    streams = {
+        'msw': {'L0': 170, 'description': 'Municipal Solid Waste'},
+        'organic': {'L0': 200, 'description': 'Food & Yard Waste'},
+        'construction': {'L0': 50, 'description': 'Construction & Demolition'},
+        'industrial': {'L0': 100, 'description': 'Industrial Waste'}
+    }
+
+    print(f"\nWaste Streams:")
+    for name, info in streams.items():
+        model.add_stream(name, L0=info['L0'])
+        print(f"  {name:15s}: L0 = {info['L0']:3d} m³/Mg - {info['description']}")
+
+    # Define waste acceptance data
+    years = np.arange(2015, 2025)
+
+    waste_data = {
+        'msw': {
+            'years': years,
+            'amounts': np.array([5000, 5200, 5400, 5600, 5800, 
+                                6000, 6200, 6400, 6600, 6800])
+        },
+        'organic': {
+            'years': years,
+            'amounts': np.array([1000, 1100, 1200, 1300, 1400,
+                                1500, 1600, 1700, 1800, 1900])
+        },
+        'construction': {
+            'years': years,
+            'amounts': np.array([800, 850, 900, 950, 1000,
+                                1050, 1100, 1150, 1200, 1250])
+        },
+        'industrial': {
+            'years': years,
+            'amounts': np.array([600, 620, 640, 660, 680,
+                                700, 720, 740, 760, 780])
+        }
+    }
+
+    total_waste = sum(d['amounts'].sum() for d in waste_data.values())
+    print(f"\nTotal Waste (2015-2024): {total_waste:,.0f} Mg")
+
+    # Calculate emissions for 2030
+    print(f"\n{'='*60}")
+    print("Emissions Calculation for 2030")
+    print(f"{'='*60}")
+
+    results = model.calculate_multi_stream(
+        waste_data=waste_data,
+        calculation_year=2030
+    )
+
+    print(f"\nTotal Emissions:")
+    print(f"  Methane (CH₄): {results['ch4_m3_year']:>15,.0f} m³/year")
+    print(f"  Total LFG:     {results['total_lfg_m3_year']:>15,.0f} m³/year")
+    print(f"  CO₂:           {results['co2_m3_year']:>15,.0f} m³/year")
+
+    print(f"\nBy Stream:")
+    for stream_name, stream_results in results['streams'].items():
+        ch4 = stream_results['ch4_m3_year']
+        pct = (ch4 / results['ch4_m3_year']) * 100
+        print(f"  {stream_name:15s}: {ch4:>12,.0f} m³/year ({pct:5.1f}%)")
+
+    # Time series analysis
+    print(f"\n{'='*60}")
+    print("Time Series Analysis (2025-2040)")
+    print(f"{'='*60}")
+
+    projection_years = np.arange(2025, 2041)
+    ts_df = model.calculate_time_series_multi_stream(
+        waste_data=waste_data,
+        projection_years=projection_years
+    )
+
+    # Find peak year for each stream
+    print(f"\nPeak Methane Generation by Stream:")
+    for stream in streams.keys():
+        col = f'{stream}_ch4_m3_year'
+        if col in ts_df.columns:
+            peak_idx = ts_df[col].idxmax()
+            peak_year = ts_df.loc[peak_idx, 'year']
+            peak_value = ts_df.loc[peak_idx, col]
+            print(f"  {stream:15s}: {peak_year:.0f} - {peak_value:>10,.0f} m³/year")
+
+    # Overall statistics
+    print(f"\nOverall Statistics:")
+    print(f"  Peak Total CH₄:   {ts_df['total_ch4_m3_year'].max():>12,.0f} m³/year")
+    print(f"  Peak Year:        {ts_df.loc[ts_df['total_ch4_m3_year'].idxmax(), 'year']:.0f}")
+    print(f"  Cumulative CH₄:   {ts_df['cumulative_ch4_m3'].iloc[-1]:>12,.0f} m³")
+
+    # Save results
+    ts_df.to_csv('multi_stream_emissions.csv', index=False)
+    print(f"\nResults saved to: multi_stream_emissions.csv")
+
+    # Stream contribution analysis
+    print(f"\n{'='*60}")
+    print("Stream Contribution Analysis")
+    print(f"{'='*60}")
+
+    stream_totals = {}
+    for stream in streams.keys():
+        col = f'{stream}_ch4_m3_year'
+        if col in ts_df.columns:
+            stream_totals[stream] = ts_df[col].sum()
+
+    total = sum(stream_totals.values())
+
+    print(f"\nTotal Methane Generation (2025-2040):")
+    for stream, value in sorted(stream_totals.items(), key=lambda x: x[1], reverse=True):
+        pct = (value / total) * 100
+        print(f"  {stream:15s}: {value:>15,.0f} m³ ({pct:5.1f}%)")
+
+if __name__ == "__main__":
+    main()
+
+
+
+================================================================================
+FILE: examples/visualization_example.py
+================================================================================
+
+"""
+Visualization example for LandGEM results.
+"""
+import numpy as np
+import matplotlib.pyplot as plt
+from landgem import LandGEM, DefaultParameters
+from landgem.visualization import (
+    plot_emissions_timeseries,
+    plot_gas_composition
+)
+
+def main():
+    print("="*60)
+    print("LandGEM Visualization Example")
+    print("="*60)
+
+    # Create model
+    params = DefaultParameters.caa_conventional()
+    model = LandGEM(**params)
+
+    # Waste data
+    waste_years = np.arange(2010, 2025)
+    waste_amounts = np.linspace(5000, 8500, len(waste_years))
+
+    # Calculate time series
+    projection_years = np.arange(2010, 2051)
+    emissions_df = model.calculate_time_series(
+        waste_years=waste_years,
+        waste_amounts=waste_amounts,
+        projection_years=projection_years
+    )
+
+    print(f"\nGenerating visualizations...")
+
+    # 1. Comprehensive time series plot
+    print("  1. Emissions time series...")
+    fig1 = plot_emissions_timeseries(
+        emissions_df,
+        title="Landfill Gas Emissions Projection (2010-2050)",
+        save_path='emissions_timeseries.png'
+    )
+    print("     Saved: emissions_timeseries.png")
+
+    # 2. Gas composition for specific year
+    print("  2. Gas composition pie chart...")
+    fig2 = plot_gas_composition(
+        emissions_df,
+        year=2030
+    )
+    plt.savefig('gas_composition_2030.png', dpi=300, bbox_inches='tight')
+    print("     Saved: gas_composition_2030.png")
+
+    # 3. Custom comparison plot
+    print("  3. Parameter sensitivity analysis...")
+    fig3, axes = plt.subplots(1, 2, figsize=(14, 5))
+
+    # Compare different k values
+    k_values = [0.02, 0.04, 0.05, 0.07]
+    colors = ['blue', 'green', 'red', 'orange']
+
+    for k, color in zip(k_values, colors):
+        model_k = LandGEM(k=k, L0=170, methane_content=0.50)
+        results_k = model_k.calculate_time_series(
+            waste_years=waste_years,
+            waste_amounts=waste_amounts,
+            projection_years=projection_years
+        )
+        axes[0].plot(results_k['year'], results_k['ch4_m3_year'],
+                    color=color, label=f'k={k}', linewidth=2)
+
+    axes[0].set_title('Effect of k Value on Methane Generation', fontweight='bold')
+    axes[0].set_xlabel('Year')
+    axes[0].set_ylabel('CH₄ (m³/year)')
+    axes[0].legend()
+    axes[0].grid(True, alpha=0.3)
+
+    # Compare different L0 values
+    L0_values = [100, 150, 170, 200]
+
+    for L0, color in zip(L0_values, colors):
+        model_L0 = LandGEM(k=0.05, L0=L0, methane_content=0.50)
+        results_L0 = model_L0.calculate_time_series(
+            waste_years=waste_years,
+            waste_amounts=waste_amounts,
+            projection_years=projection_years
+        )
+        axes[1].plot(results_L0['year'], results_L0['ch4_m3_year'],
+                    color=color, label=f'L₀={L0}', linewidth=2)
+
+    axes[1].set_title('Effect of L₀ Value on Methane Generation', fontweight='bold')
+    axes[1].set_xlabel('Year')
+    axes[1].set_ylabel('CH₄ (m³/year)')
+    axes[1].legend()
+    axes[1].grid(True, alpha=0.3)
+
+    plt.tight_layout()
+    plt.savefig('parameter_sensitivity.png', dpi=300, bbox_inches='tight')
+    print("     Saved: parameter_sensitivity.png")
+
+    # 4. Waste vs Emissions relationship
+    print("  4. Waste acceptance vs emissions...")
+    fig4, ax = plt.subplots(figsize=(10, 6))
+
+    ax2 = ax.twinx()
+
+    # Plot waste acceptance as bars
+    ax.bar(waste_years, waste_amounts, alpha=0.5, color='gray', label='Waste Accepted')
+    ax.set_xlabel('Year')
+    ax.set_ylabel('Waste Accepted (Mg/year)', color='gray')
+    ax.tick_params(axis='y', labelcolor='gray')
+
+    # Plot emissions as line
+    ax2.plot(emissions_df['year'], emissions_df['ch4_m3_year'],
+            color='red', linewidth=2, label='CH₄ Generation')
+    ax2.set_ylabel('CH₄ Generation (m³/year)', color='red')
+    ax2.tick_params(axis='y', labelcolor='red')
+
+    ax.set_title('Waste Acceptance vs Methane Generation', fontweight='bold', fontsize=14)
+    ax.grid(True, alpha=0.3)
+
+    # Add legends
+    lines1, labels1 = ax.get_legend_handles_labels()
+    lines2, labels2 = ax2.get_legend_handles_labels()
+    ax.legend(lines1 + lines2, labels1 + labels2, loc='upper left')
+
+    plt.tight_layout()
+    plt.savefig('waste_vs_emissions.png', dpi=300, bbox_inches='tight')
+    print("     Saved: waste_vs_emissions.png")
+
+    print(f"\n{'='*60}")
+    print("All visualizations created successfully!")
+    print(f"{'='*60}")
+    print(f"\nGenerated files:")
+    print("  - emissions_timeseries.png")
+    print("  - gas_composition_2030.png")
+    print("  - parameter_sensitivity.png")
+    print("  - waste_vs_emissions.png")
+
+if __name__ == "__main__":
+    main()
+
+
+
+================================================================================
+FILE: landgem/__init__.py
+================================================================================
+
+"""
+LandGEM - Landfill Gas Emissions Model
+EPA First-Order Decay Implementation
+"""
+
+__version__ = "1.0.0"
+__author__ = "Your Name"
+
+from .core import LandGEM
+from .parameters import DefaultParameters
+from .multi_stream import MultiStreamLandGEM
+from .validation import validate_inputs
+from .io import export_to_csv, export_to_excel, import_waste_data
+
+__all__ = [
+    "LandGEM",
+    "DefaultParameters",
+    "MultiStreamLandGEM",
+    "validate_inputs",
+    "export_to_csv",
+    "export_to_excel",
+    "import_waste_data",
+]
+
+
+
+================================================================================
+FILE: landgem/core.py
+================================================================================
+
+"""
+Core LandGEM model implementation.
+"""
+import numpy as np
+import pandas as pd
+from typing import Dict, List, Optional, Union
+from .equations import first_order_decay, calculate_waste_in_place
+from .validation import validate_inputs
+
+
+class LandGEM:
+    """
+    Landfill Gas Emissions Model (LandGEM) implementation.
+
+    Based on EPA's first-order decay model for estimating 
+    methane, CO2, and NMOC emissions from landfills.
+
+    Parameters
+    ----------
+    k : float
+        Methane generation rate constant (1/year)
+    L0 : float
+        Potential methane generation capacity (m³/Mg)
+    methane_content : float
+        Methane fraction of total LFG (default: 0.50)
+    nmoc_concentration : float, optional
+        NMOC concentration in ppm as hexane
+
+    Examples
+    --------
+    >>> model = LandGEM(k=0.05, L0=170, methane_content=0.50)
+    >>> waste_years = np.array([2020, 2021, 2022])
+    >>> waste_amounts = np.array([5000, 5200, 5500])
+    >>> results = model.calculate_emissions(
+    ...     waste_years=waste_years,
+    ...     waste_amounts=waste_amounts,
+    ...     calculation_year=2030
+    ... )
+    >>> print(results['ch4_m3_year'])
+    """
+
+    def __init__(
+        self,
+        k: float,
+        L0: float,
+        methane_content: float = 0.50,
+        nmoc_concentration: Optional[float] = None
+    ):
+        validate_inputs(k, L0, methane_content)
+
+        self.k = k
+        self.L0 = L0
+        self.methane_content = methane_content
+        self.nmoc_concentration = nmoc_concentration
+
+    def calculate_emissions(
+        self,
+        waste_years: Union[List, np.ndarray],
+        waste_amounts: Union[List, np.ndarray],
+        calculation_year: int,
+        collection_efficiency: float = 0.0,
+        include_nmoc: bool = False
+    ) -> Dict[str, float]:
+        """
+        Calculate emissions for a specific year.
+
+        Parameters
+        ----------
+        waste_years : array-like
+            Years when waste was accepted
+        waste_amounts : array-like
+            Amount of waste accepted each year (Mg)
+        calculation_year : int
+            Year to calculate emissions for
+        collection_efficiency : float
+            Fraction of gas collected (0-1), default 0.0
+        include_nmoc : bool
+            Whether to include NMOC calculations, default False
+
+        Returns
+        -------
+        dict
+            Dictionary containing:
+            - ch4_m3_year: Methane generation (m³/year)
+            - total_lfg_m3_year: Total landfill gas (m³/year)
+            - co2_m3_year: Carbon dioxide generation (m³/year)
+            - ch4_collected_m3_year: Collected methane (m³/year)
+            - lfg_collected_m3_year: Collected LFG (m³/year)
+            - nmoc_mg_year: NMOC emissions (Mg/year) if include_nmoc=True
+        """
+        waste_years = np.array(waste_years)
+        waste_amounts = np.array(waste_amounts)
+
+        if len(waste_years) != len(waste_amounts):
+            raise ValueError("waste_years and waste_amounts must have same length")
+
+        if not 0 <= collection_efficiency <= 1:
+            raise ValueError("collection_efficiency must be between 0 and 1")
+
+        # Calculate methane generation
+        ch4_m3_year = first_order_decay(
+            waste_years=waste_years,
+            waste_amounts=waste_amounts,
+            calculation_year=calculation_year,
+            k=self.k,
+            L0=self.L0
+        )
+
+        # Calculate total LFG
+        total_lfg = ch4_m3_year / self.methane_content
+
+        # Calculate CO2
+        co2_m3_year = total_lfg * (1 - self.methane_content)
+
+        # Calculate collected amounts
+        ch4_collected = ch4_m3_year * collection_efficiency
+        total_lfg_collected = total_lfg * collection_efficiency
+
+        results = {
+            'ch4_m3_year': ch4_m3_year,
+            'total_lfg_m3_year': total_lfg,
+            'co2_m3_year': co2_m3_year,
+            'ch4_collected_m3_year': ch4_collected,
+            'lfg_collected_m3_year': total_lfg_collected,
+        }
+
+        if include_nmoc and self.nmoc_concentration:
+            nmoc_mg_year = self._calculate_nmoc(total_lfg)
+            results['nmoc_mg_year'] = nmoc_mg_year
+
+        return results
+
+    def calculate_time_series(
+        self,
+        waste_years: Union[List, np.ndarray],
+        waste_amounts: Union[List, np.ndarray],
+        projection_years: Union[List, np.ndarray],
+        collection_efficiency: float = 0.0,
+        include_nmoc: bool = False
+    ) -> pd.DataFrame:
+        """
+        Calculate emissions time series for multiple years.
+
+        Parameters
+        ----------
+        waste_years : array-like
+            Years when waste was accepted
+        waste_amounts : array-like
+            Amount of waste accepted each year (Mg)
+        projection_years : array-like
+            Years to calculate emissions for
+        collection_efficiency : float
+            Fraction of gas collected (0-1)
+        include_nmoc : bool
+            Whether to include NMOC calculations
+
+        Returns
+        -------
+        pd.DataFrame
+            DataFrame with columns:
+            - year: Calculation year
+            - ch4_m3_year: Annual methane generation
+            - total_lfg_m3_year: Annual total LFG
+            - co2_m3_year: Annual CO2 generation
+            - cumulative_ch4_m3: Cumulative methane
+            - cumulative_lfg_m3: Cumulative LFG
+            And additional columns if collection/NMOC enabled
+        """
+        results = []
+
+        for year in projection_years:
+            emissions = self.calculate_emissions(
+                waste_years=waste_years,
+                waste_amounts=waste_amounts,
+                calculation_year=year,
+                collection_efficiency=collection_efficiency,
+                include_nmoc=include_nmoc
+            )
+            emissions['year'] = year
+            results.append(emissions)
+
+        df = pd.DataFrame(results)
+
+        # Calculate cumulative values
+        df['cumulative_ch4_m3'] = df['ch4_m3_year'].cumsum()
+        df['cumulative_lfg_m3'] = df['total_lfg_m3_year'].cumsum()
+
+        # Reorder columns
+        cols = ['year', 'ch4_m3_year', 'total_lfg_m3_year', 'co2_m3_year']
+        if collection_efficiency > 0:
+            cols.extend(['ch4_collected_m3_year', 'lfg_collected_m3_year'])
+        if include_nmoc and self.nmoc_concentration:
+            cols.append('nmoc_mg_year')
+        cols.extend(['cumulative_ch4_m3', 'cumulative_lfg_m3'])
+
+        return df[cols]
+
+    def calculate_waste_in_place(
+        self,
+        waste_years: Union[List, np.ndarray],
+        waste_amounts: Union[List, np.ndarray],
+        calculation_year: int,
+        decay_fraction: float = 0.0
+    ) -> float:
+        """
+        Calculate waste in place at a given year.
+
+        Parameters
+        ----------
+        waste_years : array-like
+            Years when waste was accepted
+        waste_amounts : array-like
+            Amount of waste accepted each year (Mg)
+        calculation_year : int
+            Year to calculate for
+        decay_fraction : float
+            Fraction of waste that has decayed (0-1)
+
+        Returns
+        -------
+        float
+            Waste in place (Mg)
+        """
+        return calculate_waste_in_place(
+            waste_years=np.array(waste_years),
+            waste_amounts=np.array(waste_amounts),
+            calculation_year=calculation_year,
+            decay_fraction=decay_fraction
+        )
+
+    def _calculate_nmoc(self, total_lfg_m3_year: float) -> float:
+        """
+        Calculate NMOC emissions from total LFG generation.
+
+        Based on EPA LandGEM methodology:
+        NMOC (Mg/year) = (Concentration × MW × Total LFG) / (3.6 × 10^9)
+
+        Parameters
+        ----------
+        total_lfg_m3_year : float
+            Total landfill gas generation (m³/year)
+
+        Returns
+        -------
+        float
+            NMOC emissions (Mg/year)
+        """
+        if not self.nmoc_concentration:
+            return 0.0
+
+        # Molecular weight correction factor (hexane basis)
+        MW_factor = 86.18 / 16.04  # Hexane MW / Methane MW
+
+        # NMOC calculation
+        # Concentration in ppm, total LFG in m³/year
+        # Result in Mg/year
+        nmoc_mg_year = (
+            self.nmoc_concentration * MW_factor * total_lfg_m3_year
+        ) / (3.6e9)
+
+        return nmoc_mg_year
+
+    def __repr__(self):
+        return (
+            f"LandGEM(k={self.k}, L0={self.L0}, "
+            f"methane_content={self.methane_content}, "
+            f"nmoc_concentration={self.nmoc_concentration})"
+        )
+
+
+
+================================================================================
+FILE: landgem/equations.py
+================================================================================
+
+"""
+First-order decay equations for LandGEM.
+"""
+import numpy as np
+
+
+def first_order_decay(
+    waste_years: np.ndarray,
+    waste_amounts: np.ndarray,
+    calculation_year: int,
+    k: float,
+    L0: float,
+    time_increment: float = 0.1
+) -> float:
+    """
+    Calculate methane generation using first-order decay model.
+
+    Implements the EPA LandGEM equation:
+    Q_CH4 = Σ(i=1 to n) Σ(j=0.0 to 1.0) (k × L0 × Mi / 10) × exp(-k × t_ij)
+
+    Parameters
+    ----------
+    waste_years : np.ndarray
+        Years when waste was accepted
+    waste_amounts : np.ndarray
+        Waste amounts (Mg) for each year
+    calculation_year : int
+        Year to calculate emissions for
+    k : float
+        Methane generation rate (1/year)
+    L0 : float
+        Potential methane capacity (m³/Mg)
+    time_increment : float
+        Sub-annual time increment (default: 0.1 year)
+
+    Returns
+    -------
+    float
+        Annual methane generation (m³/year)
+
+    Notes
+    -----
+    The equation calculates emissions for waste accepted in the past
+    by summing contributions from each waste cohort with exponential
+    decay over time.
+    """
+    total_ch4 = 0.0
+
+    # Iterate over each waste cohort
+    for i, (year, amount) in enumerate(zip(waste_years, waste_amounts)):
+        # Skip future waste
+        if year > calculation_year:
+            continue
+
+        # Calculate sub-annual contributions
+        # j ranges from 0.0 to 0.9 in increments of time_increment
+        j_values = np.arange(0.0, 1.0, time_increment)
+
+        for j in j_values:
+            # Age of waste section j accepted in year i
+            t_ij = calculation_year - year + (1 - j)
+
+            # First-order decay calculation
+            # Division by 10 accounts for time increment integration
+            ch4_contribution = (k * L0 * amount / 10) * np.exp(-k * t_ij)
+            total_ch4 += ch4_contribution
+
+    return total_ch4
+
+
+def calculate_waste_in_place(
+    waste_years: np.ndarray,
+    waste_amounts: np.ndarray,
+    calculation_year: int,
+    decay_fraction: float = 0.0
+) -> float:
+    """
+    Calculate waste in place accounting for decomposition.
+
+    Parameters
+    ----------
+    waste_years : np.ndarray
+        Years when waste was accepted
+    waste_amounts : np.ndarray
+        Waste amounts (Mg) for each year
+    calculation_year : int
+        Year to calculate for
+    decay_fraction : float
+        Fraction of waste that has decayed (0-1)
+
+    Returns
+    -------
+    float
+        Waste in place (Mg)
+    """
+    # Sum waste accepted up to calculation year
+    mask = waste_years <= calculation_year
+    total_waste = np.sum(waste_amounts[mask])
+
+    # Account for decay
+    waste_in_place = total_waste * (1 - decay_fraction)
+
+    return waste_in_place
+
+
+def estimate_k_from_half_life(half_life_years: float) -> float:
+    """
+    Estimate k value from half-life.
+
+    Parameters
+    ----------
+    half_life_years : float
+        Half-life of methane generation (years)
+
+    Returns
+    -------
+    float
+        Methane generation rate k (1/year)
+
+    Notes
+    -----
+    k = ln(2) / half_life
+    """
+    return np.log(2) / half_life_years
+
+
+def estimate_half_life_from_k(k: float) -> float:
+    """
+    Estimate half-life from k value.
+
+    Parameters
+    ----------
+    k : float
+        Methane generation rate (1/year)
+
+    Returns
+    -------
+    float
+        Half-life (years)
+
+    Notes
+    -----
+    half_life = ln(2) / k
+    """
+    return np.log(2) / k
+
+
+
+================================================================================
+FILE: landgem/io.py
+================================================================================
+
+"""
+Import/export functions for LandGEM.
+"""
+import pandas as pd
+import numpy as np
+from typing import Dict, Tuple, Union
+from pathlib import Path
+
+
+def export_to_csv(
+    df: pd.DataFrame,
+    filename: str,
+    include_metadata: bool = True
+) -> None:
+    """
+    Export emissions data to CSV file.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Emissions data from calculate_time_series
+    filename : str
+        Output CSV filename
+    include_metadata : bool
+        Whether to include metadata header
+    """
+    if include_metadata:
+        with open(filename, 'w') as f:
+            f.write("# LandGEM Emissions Data
+")
+            f.write(f"# Generated: {pd.Timestamp.now()}
+")
+            f.write("#
+")
+        df.to_csv(filename, mode='a', index=False)
+    else:
+        df.to_csv(filename, index=False)
+
+
+def export_to_excel(
+    df: pd.DataFrame,
+    filename: str,
+    sheet_name: str = 'Emissions',
+    include_metadata: bool = True
+) -> None:
+    """
+    Export emissions data to Excel file.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Emissions data
+    filename : str
+        Output Excel filename
+    sheet_name : str
+        Name of worksheet
+    include_metadata : bool
+        Whether to include metadata sheet
+    """
+    with pd.ExcelWriter(filename, engine='openpyxl') as writer:
+        df.to_excel(writer, sheet_name=sheet_name, index=False)
+
+        if include_metadata:
+            metadata = pd.DataFrame({
+                'Parameter': ['Generated', 'Rows', 'Columns'],
+                'Value': [
+                    str(pd.Timestamp.now()),
+                    len(df),
+                    len(df.columns)
+                ]
+            })
+            metadata.to_excel(writer, sheet_name='Metadata', index=False)
+
+
+def import_waste_data(
+    filename: str,
+    year_column: str = 'year',
+    amount_column: str = 'waste_mg'
+) -> Tuple[np.ndarray, np.ndarray]:
+    """
+    Import waste acceptance data from CSV or Excel.
+
+    Parameters
+    ----------
+    filename : str
+        Path to data file (CSV or Excel)
+    year_column : str
+        Name of year column
+    amount_column : str
+        Name of waste amount column
+
+    Returns
+    -------
+    tuple
+        (waste_years, waste_amounts) as numpy arrays
+    """
+    file_path = Path(filename)
+
+    if file_path.suffix == '.csv':
+        df = pd.read_csv(filename)
+    elif file_path.suffix in ['.xlsx', '.xls']:
+        df = pd.read_excel(filename)
+    else:
+        raise ValueError(f"Unsupported file format: {file_path.suffix}")
+
+    if year_column not in df.columns:
+        raise ValueError(f"Column '{year_column}' not found in {filename}")
+    if amount_column not in df.columns:
+        raise ValueError(f"Column '{amount_column}' not found in {filename}")
+
+    waste_years = df[year_column].values
+    waste_amounts = df[amount_column].values
+
+    return waste_years, waste_amounts
+
+
+def import_multi_stream_data(
+    filename: str,
+    stream_columns: Dict[str, str]
+) -> Dict[str, Dict[str, np.ndarray]]:
+    """
+    Import multi-stream waste data.
+
+    Parameters
+    ----------
+    filename : str
+        Path to data file
+    stream_columns : dict
+        Mapping of stream names to column names
+        Example: {'msw': 'msw_mg', 'organic': 'organic_mg'}
+
+    Returns
+    -------
+    dict
+        Waste data formatted for MultiStreamLandGEM
+    """
+    file_path = Path(filename)
+
+    if file_path.suffix == '.csv':
+        df = pd.read_csv(filename)
+    elif file_path.suffix in ['.xlsx', '.xls']:
+        df = pd.read_excel(filename)
+    else:
+        raise ValueError(f"Unsupported file format: {file_path.suffix}")
+
+    waste_data = {}
+    years = df['year'].values
+
+    for stream_name, column_name in stream_columns.items():
+        if column_name not in df.columns:
+            raise ValueError(f"Column '{column_name}' not found")
+
+        waste_data[stream_name] = {
+            'years': years,
+            'amounts': df[column_name].values
+        }
+
+    return waste_data
+
+
+
+================================================================================
+FILE: landgem/multi_stream.py
+================================================================================
+
+"""
+Multi-stream waste modeling for LandGEM.
+"""
+import numpy as np
+import pandas as pd
+from typing import Dict, List, Union
+from .core import LandGEM
+
+
+class MultiStreamLandGEM:
+    """
+    Multi-stream waste modeling with different L0 values.
+
+    Allows modeling of different waste types (MSW, organic,
+    construction, etc.) with distinct methane generation potentials.
+
+    Parameters
+    ----------
+    k : float
+        Methane generation rate (1/year) - shared across streams
+    methane_content : float
+        Methane fraction of LFG (default: 0.50)
+    nmoc_concentration : float, optional
+        NMOC concentration in ppm
+
+    Examples
+    --------
+    >>> model = MultiStreamLandGEM(k=0.05, methane_content=0.50)
+    >>> model.add_stream('msw', L0=170)
+    >>> model.add_stream('organic', L0=200)
+    >>> results = model.calculate_multi_stream(
+    ...     waste_data={
+    ...         'msw': {'years': [2020, 2021], 'amounts': [5000, 5200]},
+    ...         'organic': {'years': [2020, 2021], 'amounts': [1000, 1100]}
+    ...     },
+    ...     calculation_year=2030
+    ... )
+    """
+
+    def __init__(
+        self,
+        k: float,
+        methane_content: float = 0.50,
+        nmoc_concentration: float = None
+    ):
+        self.k = k
+        self.methane_content = methane_content
+        self.nmoc_concentration = nmoc_concentration
+        self.streams = {}
+
+    def add_stream(self, name: str, L0: float) -> None:
+        """
+        Add a waste stream with specific L0 value.
+
+        Parameters
+        ----------
+        name : str
+            Stream identifier (e.g., 'msw', 'organic')
+        L0 : float
+            Potential methane capacity for this stream (m³/Mg)
+        """
+        model = LandGEM(
+            k=self.k,
+            L0=L0,
+            methane_content=self.methane_content,
+            nmoc_concentration=self.nmoc_concentration
+        )
+        self.streams[name] = model
+
+    def calculate_multi_stream(
+        self,
+        waste_data: Dict[str, Dict[str, Union[List, np.ndarray]]],
+        calculation_year: int,
+        collection_efficiency: float = 0.0,
+        include_nmoc: bool = False
+    ) -> Dict[str, float]:
+        """
+        Calculate emissions from multiple waste streams.
+
+        Parameters
+        ----------
+        waste_data : dict
+            Dictionary mapping stream names to waste data:
+            {'stream_name': {'years': [...], 'amounts': [...]}}
+        calculation_year : int
+            Year to calculate emissions for
+        collection_efficiency : float
+            Fraction of gas collected (0-1)
+        include_nmoc : bool
+            Whether to include NMOC calculations
+
+        Returns
+        -------
+        dict
+            Combined emissions from all streams
+        """
+        total_results = {
+            'ch4_m3_year': 0.0,
+            'total_lfg_m3_year': 0.0,
+            'co2_m3_year': 0.0,
+            'ch4_collected_m3_year': 0.0,
+            'lfg_collected_m3_year': 0.0
+        }
+
+        stream_results = {}
+
+        for stream_name, data in waste_data.items():
+            if stream_name not in self.streams:
+                raise ValueError(f"Stream '{stream_name}' not defined")
+
+            model = self.streams[stream_name]
+
+            results = model.calculate_emissions(
+                waste_years=data['years'],
+                waste_amounts=data['amounts'],
+                calculation_year=calculation_year,
+                collection_efficiency=collection_efficiency,
+                include_nmoc=include_nmoc
+            )
+
+            stream_results[stream_name] = results
+
+            # Accumulate totals
+            for key in total_results.keys():
+                total_results[key] += results.get(key, 0.0)
+
+        # Add NMOC if requested
+        if include_nmoc and self.nmoc_concentration:
+            total_results['nmoc_mg_year'] = sum(
+                r.get('nmoc_mg_year', 0.0) for r in stream_results.values()
+            )
+
+        # Add stream-specific results
+        total_results['streams'] = stream_results
+
+        return total_results
+
+    def calculate_time_series_multi_stream(
+        self,
+        waste_data: Dict[str, Dict[str, Union[List, np.ndarray]]],
+        projection_years: Union[List, np.ndarray],
+        collection_efficiency: float = 0.0
+    ) -> pd.DataFrame:
+        """
+        Calculate time series for multiple streams.
+
+        Parameters
+        ----------
+        waste_data : dict
+            Waste data for each stream
+        projection_years : array-like
+            Years to calculate emissions for
+        collection_efficiency : float
+            Fraction of gas collected
+
+        Returns
+        -------
+        pd.DataFrame
+            Time series with total and per-stream emissions
+        """
+        results = []
+
+        for year in projection_years:
+            year_results = self.calculate_multi_stream(
+                waste_data=waste_data,
+                calculation_year=year,
+                collection_efficiency=collection_efficiency
+            )
+
+            row = {
+                'year': year,
+                'total_ch4_m3_year': year_results['ch4_m3_year'],
+                'total_lfg_m3_year': year_results['total_lfg_m3_year'],
+                'total_co2_m3_year': year_results['co2_m3_year']
+            }
+
+            # Add per-stream values
+            for stream_name, stream_res in year_results['streams'].items():
+                row[f'{stream_name}_ch4_m3_year'] = stream_res['ch4_m3_year']
+
+            results.append(row)
+
+        df = pd.DataFrame(results)
+        df['cumulative_ch4_m3'] = df['total_ch4_m3_year'].cumsum()
+
+        return df
+
+    def __repr__(self):
+        streams_str = ', '.join(self.streams.keys())
+        return f"MultiStreamLandGEM(k={self.k}, streams=[{streams_str}])"
+
+
+
+================================================================================
+FILE: landgem/parameters.py
+================================================================================
+
+"""
+EPA default parameters for LandGEM.
+"""
+from typing import Dict
+
+
+class DefaultParameters:
+    """
+    EPA default parameter sets for LandGEM.
+
+    Provides both CAA (Clean Air Act) and Inventory default
+    parameter sets for different landfill types.
+
+    CAA defaults are more conservative and typically used for
+    regulatory compliance calculations.
+
+    Inventory defaults represent average conditions and are
+    suitable for emission inventories when site-specific data
+    is unavailable.
+    """
+
+    @staticmethod
+    def caa_conventional() -> Dict[str, float]:
+        """
+        CAA defaults for conventional landfills.
+
+        Returns
+        -------
+        dict
+            Parameters: k, L0, methane_content, nmoc_concentration
+        """
+        return {
+            'k': 0.05,
+            'L0': 170,
+            'methane_content': 0.50,
+            'nmoc_concentration': 4000
+        }
+
+    @staticmethod
+    def caa_arid() -> Dict[str, float]:
+        """
+        CAA defaults for arid landfills (<25 inches precipitation).
+
+        Returns
+        -------
+        dict
+            Parameters with lower k value for dry conditions
+        """
+        return {
+            'k': 0.02,
+            'L0': 170,
+            'methane_content': 0.50,
+            'nmoc_concentration': 4000
+        }
+
+    @staticmethod
+    def caa_wet() -> Dict[str, float]:
+        """
+        CAA defaults for wet/bioreactor landfills.
+
+        Returns
+        -------
+        dict
+            Parameters with high k value for enhanced decomposition
+        """
+        return {
+            'k': 0.7,
+            'L0': 170,
+            'methane_content': 0.50,
+            'nmoc_concentration': 4000
+        }
+
+    @staticmethod
+    def inventory_conventional() -> Dict[str, float]:
+        """
+        Inventory defaults for conventional landfills.
+
+        Returns
+        -------
+        dict
+            Average parameters for typical MSW landfills
+        """
+        return {
+            'k': 0.04,
+            'L0': 100,
+            'methane_content': 0.50,
+            'nmoc_concentration': 600
+        }
+
+    @staticmethod
+    def inventory_conventional_codisposal() -> Dict[str, float]:
+        """
+        Inventory defaults for conventional landfills with co-disposal.
+
+        Returns
+        -------
+        dict
+            Parameters for landfills accepting industrial waste
+        """
+        return {
+            'k': 0.04,
+            'L0': 100,
+            'methane_content': 0.50,
+            'nmoc_concentration': 2400
+        }
+
+    @staticmethod
+    def inventory_arid() -> Dict[str, float]:
+        """
+        Inventory defaults for arid landfills.
+
+        Returns
+        -------
+        dict
+            Parameters for dry climate landfills
+        """
+        return {
+            'k': 0.02,
+            'L0': 100,
+            'methane_content': 0.50,
+            'nmoc_concentration': 600
+        }
+
+    @staticmethod
+    def inventory_arid_codisposal() -> Dict[str, float]:
+        """
+        Inventory defaults for arid landfills with co-disposal.
+
+        Returns
+        -------
+        dict
+            Parameters for arid landfills accepting industrial waste
+        """
+        return {
+            'k': 0.02,
+            'L0': 100,
+            'methane_content': 0.50,
+            'nmoc_concentration': 2400
+        }
+
+    @staticmethod
+    def inventory_wet() -> Dict[str, float]:
+        """
+        Inventory defaults for wet landfills.
+
+        Returns
+        -------
+        dict
+            Parameters for bioreactor/wet landfills
+        """
+        return {
+            'k': 0.7,
+            'L0': 96,
+            'methane_content': 0.50,
+            'nmoc_concentration': 600
+        }
+
+    @staticmethod
+    def inventory_wet_codisposal() -> Dict[str, float]:
+        """
+        Inventory defaults for wet landfills with co-disposal.
+
+        Returns
+        -------
+        dict
+            Parameters for bioreactor landfills with industrial waste
+        """
+        return {
+            'k': 0.7,
+            'L0': 96,
+            'methane_content': 0.50,
+            'nmoc_concentration': 2400
+        }
+
+    @staticmethod
+    def get_all_defaults() -> Dict[str, Dict[str, float]]:
+        """
+        Get all available default parameter sets.
+
+        Returns
+        -------
+        dict
+            Dictionary mapping parameter set names to parameters
+        """
+        return {
+            'caa_conventional': DefaultParameters.caa_conventional(),
+            'caa_arid': DefaultParameters.caa_arid(),
+            'caa_wet': DefaultParameters.caa_wet(),
+            'inventory_conventional': DefaultParameters.inventory_conventional(),
+            'inventory_conventional_codisposal': DefaultParameters.inventory_conventional_codisposal(),
+            'inventory_arid': DefaultParameters.inventory_arid(),
+            'inventory_arid_codisposal': DefaultParameters.inventory_arid_codisposal(),
+            'inventory_wet': DefaultParameters.inventory_wet(),
+            'inventory_wet_codisposal': DefaultParameters.inventory_wet_codisposal(),
+        }
+
+
+
+================================================================================
+FILE: landgem/validation.py
+================================================================================
+
+"""
+Input validation for LandGEM parameters.
+"""
+import numpy as np
+from typing import Union, List
+
+
+def validate_inputs(k: float, L0: float, methane_content: float) -> None:
+    """
+    Validate LandGEM input parameters.
+
+    Parameters
+    ----------
+    k : float
+        Methane generation rate (1/year)
+    L0 : float
+        Potential methane capacity (m³/Mg)
+    methane_content : float
+        Methane fraction of LFG (0-1)
+
+    Raises
+    ------
+    ValueError
+        If any parameter is out of valid range
+    TypeError
+        If any parameter is not numeric
+    """
+    # Type checking
+    if not isinstance(k, (int, float)):
+        raise TypeError(f"k must be numeric, got {type(k)}")
+    if not isinstance(L0, (int, float)):
+        raise TypeError(f"L0 must be numeric, got {type(L0)}")
+    if not isinstance(methane_content, (int, float)):
+        raise TypeError(f"methane_content must be numeric, got {type(methane_content)}")
+
+    # Range checking
+    if k <= 0:
+        raise ValueError(f"k must be positive, got {k}")
+    if k > 1.0:
+        raise ValueError(f"k unusually high (>1.0), got {k}. Check units (1/year)")
+
+    if L0 <= 0:
+        raise ValueError(f"L0 must be positive, got {L0}")
+    if L0 > 500:
+        raise ValueError(f"L0 unusually high (>500), got {L0}. Check units (m³/Mg)")
+
+    if not 0 < methane_content < 1:
+        raise ValueError(
+            f"methane_content must be between 0 and 1, got {methane_content}"
+        )
+    if methane_content < 0.4 or methane_content > 0.6:
+        import warnings
+        warnings.warn(
+            f"methane_content {methane_content} outside typical range (0.4-0.6)"
+        )
+
+
+def validate_waste_data(
+    waste_years: Union[List, np.ndarray],
+    waste_amounts: Union[List, np.ndarray]
+) -> None:
+    """
+    Validate waste acceptance data.
+
+    Parameters
+    ----------
+    waste_years : array-like
+        Years when waste was accepted
+    waste_amounts : array-like
+        Waste amounts (Mg)
+
+    Raises
+    ------
+    ValueError
+        If data is invalid or inconsistent
+    """
+    waste_years = np.array(waste_years)
+    waste_amounts = np.array(waste_amounts)
+
+    if len(waste_years) == 0:
+        raise ValueError("waste_years is empty")
+
+    if len(waste_years) != len(waste_amounts):
+        raise ValueError(
+            f"waste_years and waste_amounts must have same length: "
+            f"{len(waste_years)} != {len(waste_amounts)}"
+        )
+
+    if np.any(waste_amounts < 0):
+        raise ValueError("waste_amounts cannot be negative")
+
+    if not np.all(np.diff(waste_years) >= 0):
+        raise ValueError("waste_years must be in ascending order")
+
+    if np.any(np.diff(waste_years) == 0):
+        import warnings
+        warnings.warn("Duplicate years found in waste_years")
+
+
+
+================================================================================
+FILE: landgem/visualization.py
+================================================================================
+
+"""
+Visualization tools for LandGEM results.
+"""
+import matplotlib.pyplot as plt
+import pandas as pd
+import numpy as np
+from typing import Optional, List, Tuple
+
+
+def plot_emissions_timeseries(
+    df: pd.DataFrame,
+    title: str = "Landfill Gas Emissions Projection",
+    figsize: Tuple[int, int] = (15, 10),
+    save_path: Optional[str] = None
+) -> plt.Figure:
+    """
+    Create comprehensive emissions visualization.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Emissions time series from LandGEM.calculate_time_series()
+    title : str
+        Plot title
+    figsize : tuple
+        Figure size (width, height)
+    save_path : str, optional
+        Path to save figure
+
+    Returns
+    -------
+    matplotlib.figure.Figure
+        The created figure
+    """
+    fig, axes = plt.subplots(2, 2, figsize=figsize)
+    fig.suptitle(title, fontsize=16, fontweight='bold')
+
+    # Methane generation
+    axes[0, 0].plot(df['year'], df['ch4_m3_year'], 'b-', linewidth=2)
+    axes[0, 0].set_title('Methane Generation', fontweight='bold')
+    axes[0, 0].set_xlabel('Year')
+    axes[0, 0].set_ylabel('CH₄ (m³/year)')
+    axes[0, 0].grid(True, alpha=0.3)
+    axes[0, 0].ticklabel_format(style='plain', axis='y')
+
+    # Total LFG
+    axes[0, 1].plot(df['year'], df['total_lfg_m3_year'], 'g-', linewidth=2)
+    axes[0, 1].set_title('Total Landfill Gas Generation', fontweight='bold')
+    axes[0, 1].set_xlabel('Year')
+    axes[0, 1].set_ylabel('LFG (m³/year)')
+    axes[0, 1].grid(True, alpha=0.3)
+    axes[0, 1].ticklabel_format(style='plain', axis='y')
+
+    # CO2
+    axes[1, 0].plot(df['year'], df['co2_m3_year'], 'r-', linewidth=2)
+    axes[1, 0].set_title('Carbon Dioxide Generation', fontweight='bold')
+    axes[1, 0].set_xlabel('Year')
+    axes[1, 0].set_ylabel('CO₂ (m³/year)')
+    axes[1, 0].grid(True, alpha=0.3)
+    axes[1, 0].ticklabel_format(style='plain', axis='y')
+
+    # Cumulative CH4
+    axes[1, 1].plot(df['year'], df['cumulative_ch4_m3'], 'purple', linewidth=2)
+    axes[1, 1].set_title('Cumulative Methane Generation', fontweight='bold')
+    axes[1, 1].set_xlabel('Year')
+    axes[1, 1].set_ylabel('Cumulative CH₄ (m³)')
+    axes[1, 1].grid(True, alpha=0.3)
+    axes[1, 1].ticklabel_format(style='plain', axis='y')
+
+    plt.tight_layout()
+
+    if save_path:
+        plt.savefig(save_path, dpi=300, bbox_inches='tight')
+
+    return fig
+
+
+def plot_gas_composition(
+    df: pd.DataFrame,
+    year: int,
+    figsize: Tuple[int, int] = (8, 8)
+) -> plt.Figure:
+    """
+    Create pie chart of gas composition for a specific year.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Emissions time series
+    year : int
+        Year to visualize
+    figsize : tuple
+        Figure size
+
+    Returns
+    -------
+    matplotlib.figure.Figure
+    """
+    row = df[df['year'] == year]
+    if len(row) == 0:
+        raise ValueError(f"Year {year} not found in data")
+
+    ch4 = row['ch4_m3_year'].values[0]
+    co2 = row['co2_m3_year'].values[0]
+
+    fig, ax = plt.subplots(figsize=figsize)
+
+    sizes = [ch4, co2]
+    labels = [f'Methane (CH₄)
+{ch4:,.0f} m³/year', 
+              f'Carbon Dioxide (CO₂)
+{co2:,.0f} m³/year']
+    colors = ['#3b82f6', '#ef4444']
+    explode = (0.1, 0)
+
+    ax.pie(sizes, explode=explode, labels=labels, colors=colors,
+           autopct='%1.1f%%', shadow=True, startangle=90)
+    ax.set_title(f'Landfill Gas Composition - {year}', 
+                 fontsize=14, fontweight='bold')
+
+    return fig
+
+
+def plot_multi_stream_comparison(
+    df: pd.DataFrame,
+    stream_names: List[str],
+    figsize: Tuple[int, int] = (12, 6)
+) -> plt.Figure:
+    """
+    Compare emissions from multiple waste streams.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Multi-stream time series data
+    stream_names : list
+        Names of streams to plot
+    figsize : tuple
+        Figure size
+
+    Returns
+    -------
+    matplotlib.figure.Figure
+    """
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=figsize)
+
+    # Time series comparison
+    for stream in stream_names:
+        col = f'{stream}_ch4_m3_year'
+        if col in df.columns:
+            ax1.plot(df['year'], df[col], marker='o', label=stream, linewidth=2)
+
+    ax1.set_title('Methane Generation by Stream', fontweight='bold')
+    ax1.set_xlabel('Year')
+    ax1.set_ylabel('CH₄ (m³/year)')
+    ax1.legend()
+    ax1.grid(True, alpha=0.3)
+
+    # Stacked area plot
+    stream_data = []
+    for stream in stream_names:
+        col = f'{stream}_ch4_m3_year'
+        if col in df.columns:
+            stream_data.append(df[col].values)
+
+    if stream_data:
+        ax2.stackplot(df['year'], *stream_data, labels=stream_names, alpha=0.8)
+        ax2.set_title('Cumulative Stream Contributions', fontweight='bold')
+        ax2.set_xlabel('Year')
+        ax2.set_ylabel('CH₄ (m³/year)')
+        ax2.legend(loc='upper left')
+        ax2.grid(True, alpha=0.3)
+
+    plt.tight_layout()
+    return fig
+
+
+
+================================================================================
+FILE: pytest.ini
+================================================================================
+
+[pytest]
+testpaths = tests
+python_files = test_*.py
+python_classes = Test*
+python_functions = test_*
+addopts = 
+    -v
+    --strict-markers
+    --tb=short
+
+
+
+================================================================================
+FILE: requirements.txt
+================================================================================
+
+numpy>=1.20.0
+pandas>=1.3.0
+matplotlib>=3.4.0
+
+
+
+================================================================================
+FILE: setup.py
+================================================================================
+
+"""
+LandGEM - Landfill Gas Emissions Model
+EPA First-Order Decay Implementation
+"""
+from setuptools import setup, find_packages
+
+with open("README.md", "r", encoding="utf-8") as fh:
+    long_description = fh.read()
+
+setup(
+    name="landgem",
+    version="1.0.0",
+    author="Your Name",
+    author_email="your.email@example.com",
+    description="EPA Landfill Gas Emissions Model (LandGEM) implementation",
+    long_description=long_description,
+    long_description_content_type="text/markdown",
+    url="https://github.com/yourusername/landgem",
+    packages=find_packages(),
+    classifiers=[
+        "Development Status :: 4 - Beta",
+        "Intended Audience :: Science/Research",
+        "Topic :: Scientific/Engineering :: Environmental Science",
+        "License :: OSI Approved :: MIT License",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
+    ],
+    python_requires=">=3.8",
+    install_requires=[
+        "numpy>=1.20.0",
+        "pandas>=1.3.0",
+        "matplotlib>=3.4.0",
+    ],
+    extras_require={
+        "dev": [
+            "pytest>=6.0",
+            "pytest-cov>=2.0",
+            "black>=21.0",
+            "flake8>=3.9",
+            "mypy>=0.900",
+        ],
+    },
+)
+
+
+
+================================================================================
+FILE: tests/__init__.py
+================================================================================
+
+
+
+
+================================================================================
+FILE: tests/test_core.py
+================================================================================
+
+"""
+Tests for core LandGEM functionality.
+"""
+import pytest
+import numpy as np
+from landgem import LandGEM, DefaultParameters
+
+
+class TestLandGEM:
+
+    def test_initialization(self):
+        """Test model initialization."""
+        model = LandGEM(k=0.05, L0=170, methane_content=0.50)
+        assert model.k == 0.05
+        assert model.L0 == 170
+        assert model.methane_content == 0.50
+
+    def test_default_parameters(self):
+        """Test using default parameters."""
+        params = DefaultParameters.caa_conventional()
+        model = LandGEM(**params)
+        assert model.k == 0.05
+        assert model.L0 == 170
+
+    def test_calculate_emissions(self):
+        """Test emissions calculation."""
+        model = LandGEM(k=0.05, L0=170, methane_content=0.50)
+
+        waste_years = np.array([2020, 2021, 2022])
+        waste_amounts = np.array([5000, 5200, 5400])
+
+        results = model.calculate_emissions(
+            waste_years=waste_years,
+            waste_amounts=waste_amounts,
+            calculation_year=2025
+        )
+
+        assert 'ch4_m3_year' in results
+        assert 'total_lfg_m3_year' in results
+        assert 'co2_m3_year' in results
+        assert results['ch4_m3_year'] > 0
+        assert results['total_lfg_m3_year'] > results['ch4_m3_year']
+
+    def test_time_series(self):
+        """Test time series calculation."""
+        model = LandGEM(k=0.05, L0=170, methane_content=0.50)
+
+        waste_years = np.array([2020, 2021, 2022])
+        waste_amounts = np.array([5000, 5200, 5400])
+        projection_years = np.arange(2023, 2031)
+
+        df = model.calculate_time_series(
+            waste_years=waste_years,
+            waste_amounts=waste_amounts,
+            projection_years=projection_years
+        )
+
+        assert len(df) == len(projection_years)
+        assert 'year' in df.columns
+        assert 'ch4_m3_year' in df.columns
+        assert 'cumulative_ch4_m3' in df.columns
+
+    def test_collection_efficiency(self):
+        """Test gas collection calculations."""
+        model = LandGEM(k=0.05, L0=170, methane_content=0.50)
+
+        waste_years = np.array([2020])
+        waste_amounts = np.array([5000])
+
+        results = model.calculate_emissions(
+            waste_years=waste_years,
+            waste_amounts=waste_amounts,
+            calculation_year=2025,
+            collection_efficiency=0.75
+        )
+
+        assert 'ch4_collected_m3_year' in results
+        collected = results['ch4_collected_m3_year']
+        generated = results['ch4_m3_year']
+        assert collected == generated * 0.75
+
+    def test_invalid_inputs(self):
+        """Test input validation."""
+        with pytest.raises(ValueError):
+            LandGEM(k=-0.05, L0=170, methane_content=0.50)
+
+        with pytest.raises(ValueError):
+            LandGEM(k=0.05, L0=-170, methane_content=0.50)
+
+        with pytest.raises(ValueError):
+            LandGEM(k=0.05, L0=170, methane_content=1.5)
+
+
+
+================================================================================
+FILE: tests/test_equations.py
+================================================================================
+
+"""
+Tests for LandGEM equations.
+"""
+import pytest
+import numpy as np
+from landgem.equations import (
+    first_order_decay,
+    calculate_waste_in_place,
+    estimate_k_from_half_life,
+    estimate_half_life_from_k
+)
+
+
+class TestEquations:
+
+    def test_first_order_decay_positive(self):
+        """Test that decay produces positive emissions."""
+        waste_years = np.array([2020, 2021])
+        waste_amounts = np.array([1000, 1000])
+
+        result = first_order_decay(
+            waste_years=waste_years,
+            waste_amounts=waste_amounts,
+            calculation_year=2025,
+            k=0.05,
+            L0=170
+        )
+
+        assert result > 0
+
+    def test_first_order_decay_increases_with_waste(self):
+        """Test emissions increase with more waste."""
+        waste_years = np.array([2020])
+
+        result1 = first_order_decay(
+            waste_years=waste_years,
+            waste_amounts=np.array([1000]),
+            calculation_year=2025,
+            k=0.05,
+            L0=170
+        )
+
+        result2 = first_order_decay(
+            waste_years=waste_years,
+            waste_amounts=np.array([2000]),
+            calculation_year=2025,
+            k=0.05,
+            L0=170
+        )
+
+        assert result2 > result1
+        assert result2 / result1 == pytest.approx(2.0, rel=0.01)
+
+    def test_waste_in_place(self):
+        """Test waste in place calculation."""
+        waste_years = np.array([2020, 2021, 2022])
+        waste_amounts = np.array([1000, 1000, 1000])
+
+        wip = calculate_waste_in_place(
+            waste_years=waste_years,
+            waste_amounts=waste_amounts,
+            calculation_year=2022,
+            decay_fraction=0.0
+        )
+
+        assert wip == 3000
+
+        wip_decay = calculate_waste_in_place(
+            waste_years=waste_years,
+            waste_amounts=waste_amounts,
+            calculation_year=2022,
+            decay_fraction=0.2
+        )
+
+        assert wip_decay == 2400
+
+    def test_k_half_life_conversion(self):
+        """Test k and half-life conversion."""
+        k = 0.05
+        half_life = estimate_half_life_from_k(k)
+        k_back = estimate_k_from_half_life(half_life)
+
+        assert k == pytest.approx(k_back, rel=1e-6)
+
+
+
+================================================================================
+FILE: tests/test_parameters.py
+================================================================================
+
+"""
+Tests for default parameters.
+"""
+import pytest
+from landgem import DefaultParameters
+
+
+class TestDefaultParameters:
+
+    def test_caa_conventional(self):
+        """Test CAA conventional parameters."""
+        params = DefaultParameters.caa_conventional()
+        assert params['k'] == 0.05
+        assert params['L0'] == 170
+        assert params['methane_content'] == 0.50
+
+    def test_caa_arid(self):
+        """Test CAA arid parameters."""
+        params = DefaultParameters.caa_arid()
+        assert params['k'] == 0.02
+        assert params['k'] < DefaultParameters.caa_conventional()['k']
+
+    def test_caa_wet(self):
+        """Test CAA wet parameters."""
+        params = DefaultParameters.caa_wet()
+        assert params['k'] == 0.7
+        assert params['k'] > DefaultParameters.caa_conventional()['k']
+
+    def test_inventory_parameters(self):
+        """Test inventory parameters are different from CAA."""
+        caa = DefaultParameters.caa_conventional()
+        inv = DefaultParameters.inventory_conventional()
+
+        assert inv['L0'] < caa['L0']
+        assert inv['nmoc_concentration'] < caa['nmoc_concentration']
+
+    def test_get_all_defaults(self):
+        """Test retrieving all default sets."""
+        all_params = DefaultParameters.get_all_defaults()
+
+        assert 'caa_conventional' in all_params
+        assert 'inventory_wet' in all_params
+        assert len(all_params) >= 9
+
+
+
+================================================================================
+FILE: tests/test_validation.py
+================================================================================
+
+"""
+Tests for input validation.
+"""
+import pytest
+import numpy as np
+from landgem.validation import validate_inputs, validate_waste_data
+
+
+class TestValidation:
+
+    def test_negative_k(self):
+        """Test rejection of negative k."""
+        with pytest.raises(ValueError, match="k must be positive"):
+            validate_inputs(k=-0.05, L0=170, methane_content=0.50)
+
+    def test_negative_L0(self):
+        """Test rejection of negative L0."""
+        with pytest.raises(ValueError, match="L0 must be positive"):
+            validate_inputs(k=0.05, L0=-170, methane_content=0.50)
+
+    def test_invalid_methane_content(self):
+        """Test rejection of invalid methane content."""
+        with pytest.raises(ValueError):
+            validate_inputs(k=0.05, L0=170, methane_content=1.5)
+
+        with pytest.raises(ValueError):
+            validate_inputs(k=0.05, L0=170, methane_content=-0.1)
+
+    def test_valid_inputs(self):
+        """Test acceptance of valid inputs."""
+        # Should not raise
+        validate_inputs(k=0.05, L0=170, methane_content=0.50)
+
+    def test_waste_data_validation(self):
+        """Test waste data validation."""
+        # Valid data
+        validate_waste_data(
+            waste_years=[2020, 2021, 2022],
+            waste_amounts=[1000, 1100, 1200]
+        )
+
+        # Mismatched lengths
+        with pytest.raises(ValueError, match="same length"):
+            validate_waste_data(
+                waste_years=[2020, 2021],
+                waste_amounts=[1000, 1100, 1200]
+            )
+
+        # Negative amounts
+        with pytest.raises(ValueError, match="cannot be negative"):
+            validate_waste_data(
+                waste_years=[2020, 2021],
+                waste_amounts=[1000, -1100]
+            )
+
+
