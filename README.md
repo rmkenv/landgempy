@@ -16,4 +16,4 @@ import landgempy
 ```
 
 ## About LandGEM
-LandGEM is an automated tool with a Microsoft Excel interface that can be used to estimate emission rates for total landfill gas, methane, carbon dioxide, nonmethane organic compounds, and individual air pollutants from municipal solid waste landfills.
+LandGEM is an automated tool with a Microsoft Excel interface that can be used to estimate emission rates for total landfill gas, methane, carbon dioxide, nonmethane organic compounds, and individual air pollutants from municipal solid waste landfills. Not an offical EPA product 
